@@ -5,12 +5,26 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$pdo = new PDO("mysql:host=localhost;dbname=blog", "root", "", [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-]);
+$host = 'localhost';
+$db   = 'blog';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
 
-$stmt = $pdo->prepare("SELECT posts.*, users.username FROM posts JOIN users ON posts.user_id = users.id ORDER BY posts.created_at DESC");
-$stmt->execute();
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+$pdo = new PDO($dsn, $user, $pass, $options);
+
+// Fetch all posts with author names
+$stmt = $pdo->query("
+    SELECT posts.*, users.username 
+    FROM posts 
+    JOIN users ON posts.user_id = users.id 
+    ORDER BY posts.created_at DESC
+");
 $posts = $stmt->fetchAll();
 ?>
 
@@ -19,26 +33,21 @@ $posts = $stmt->fetchAll();
 <head>
     <title>Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
 </head>
-<body class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Welcome, <?=htmlspecialchars($_SESSION['user'])?></h2>
-        <div>
-            <a href="create.php" class="btn btn-success">+ New Post</a>
-            <a href="logout.php" class="btn btn-danger ms-2">Logout</a>
-        </div>
-    </div>
+<body class="container mt-4">
+    <h2>All Posts</h2>
+    <p>Welcome, <strong><?= htmlspecialchars($_SESSION['user']) ?></strong> | <a href="logout.php">Logout</a></p>
+    <a href="create.php" class="btn btn-primary mb-3">Create New Post</a>
 
     <?php foreach ($posts as $post): ?>
-        <div class="card mb-3 shadow-sm">
+        <div class="card mb-3">
             <div class="card-body">
-                <h5 class="card-title"><?=htmlspecialchars($post['title'])?></h5>
-                <p class="card-text"><?=nl2br(htmlspecialchars($post['content']))?></p>
-                <p class="text-muted mb-1">By <?=htmlspecialchars($post['username'])?> on <?=date("F j, Y, g:i a", strtotime($post['created_at']))?></p>
-                <?php if ($_SESSION['user_id'] == $post['user_id']): ?>
-                    <a href="edit.php?id=<?=$post['id']?>" class="btn btn-warning btn-sm">Edit</a>
-                    <a href="delete.php?id=<?=$post['id']?>" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</a>
+                <h5><?= htmlspecialchars($post['title']) ?></h5>
+                <p><?= nl2br(htmlspecialchars($post['content'])) ?></p>
+                <small class="text-muted">By <?= htmlspecialchars($post['username']) ?> on <?= $post['created_at'] ?></small><br>
+                <?php if ($post['user_id'] == $_SESSION['user_id']): ?>
+                    <a href="edit.php?id=<?= $post['id'] ?>" class="btn btn-sm btn-warning">Edit</a>
+                    <a href="delete.php?id=<?= $post['id'] ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
                 <?php endif; ?>
             </div>
         </div>
