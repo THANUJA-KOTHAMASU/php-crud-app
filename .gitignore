@@ -1,0 +1,28 @@
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore environment files (if any)
+.env
+
+# Ignore IDE/editor folders
+.vscode/
+.idea/
+
+# Ignore logs
+*.log
+
+# Ignore PHP session files (if stored locally)
+sess_*
+
+# Ignore node_modules if you use node for anything
+node_modules/
+
+# Ignore vendor if using composer
+vendor/
+
+# Ignore compiled files (if any)
+*.exe
+*.dll
+*.so
+*.dylib
